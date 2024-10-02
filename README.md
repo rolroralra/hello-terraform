@@ -17,5 +17,5 @@
 - **상태 파일(State File)**: 현재 인프라 상태를 기록하는 파일로, Terraform의 로컬이나 원격 저장소에 저장됩니다.
 
 # 목차
-- [Terraform 명령어 개요](./docs/1_commands.md)
+- [Terraform 명령어 개요](./docs/1_basic.md)
 - [Terraform Block 목록](./docs/2_blocks.md)
