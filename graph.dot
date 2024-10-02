@@ -1,0 +1,15 @@
+digraph {
+compound = "true"
+newrank = "true"
+subgraph "root" {
+"[root] local_file.abc (expand)" [label = "local_file.abc", shape = "box"]
+"[root] local_file.def (expand)" [label = "local_file.def", shape = "box"]
+"[root] provider[\"registry.opentofu.org/hashicorp/local\"]" [label = "provider[\"registry.opentofu.org/hashicorp/local\"]", shape = "diamond"]
+"[root] local_file.abc (expand)" -> "[root] provider[\"registry.opentofu.org/hashicorp/local\"]"
+"[root] local_file.def (expand)" -> "[root] provider[\"registry.opentofu.org/hashicorp/local\"]"
+"[root] provider[\"registry.opentofu.org/hashicorp/local\"] (close)" -> "[root] local_file.abc (expand)"
+"[root] provider[\"registry.opentofu.org/hashicorp/local\"] (close)" -> "[root] local_file.def (expand)"
+"[root] root" -> "[root] provider[\"registry.opentofu.org/hashicorp/local\"] (close)"
+}
+}
+
