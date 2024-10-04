@@ -282,7 +282,7 @@ variable "<variable_name>" {
     error_message = "<error_message>"
   }
   sensitive   = false
-  nullable    = true
+  nullable    = false
 }
 ```
 
@@ -390,5 +390,25 @@ variable "ingress_rules" {
 
 output "ingress_rules" {
   value = var.ingress_rules
+}
+```
+
+## Variable Validation
+- variable block 에서 `validation` 블록을 사용하여 변수의 유효성을 검사할 수 있다.
+
+```hcl
+variable "image_id" {
+  type = string
+  description = "AMI ID"
+  
+  validation {
+    condition = length(var.image_id) > 4
+    error_message = "Image ID must not be empty"
+  }
+  
+  validation {
+    condition = can(regex("^ami-", var.image_id))
+    error_message = "Image ID must be in the format 'ami-...'"
+  }
 }
 ```
