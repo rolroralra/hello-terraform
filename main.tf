@@ -26,3 +26,11 @@ resource "local_file" "def" {
   content  = "456"
   filename = "${path.module}/def.txt"
 }
+
+output "file_id" {
+  value = local_file.abc.id
+}
+
+output "file_absolute_path" {
+  value = abspath(local_file.abc.filename)
+}

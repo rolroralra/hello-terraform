@@ -188,7 +188,10 @@ resource "local_file" "abc" {
   filename = "${path.module}/abc.txt"
   
   lifecycle {
-    ignore_changes = all
+    # ignore_changes = all
+    ignore_changes = [
+      content
+    ]
   }
 }
 ```
@@ -233,7 +236,7 @@ resource "local_file" "abc" {
 ```
 
 # Data Block
-- Terraform으로 정의 되지 않은 외부 리소스 또는 저장된 정보를 Terraform 내에서 참조할 때 사용한다.
+- Terraform으로 정의되지 않은 외부 리소스 또는 저장된 정보를 Terraform 내에서 참조할 때 사용한다.
 - 데이터 소스로 읽은 대상을 참조하는 방식은 리소스와 구별되게 data가 앞에 붙는다.
 
 ```hcl
@@ -412,3 +415,120 @@ variable "image_id" {
   }
 }
 ```
+
+## Variable 우선순위
+1. 명령줄 인수
+2. default 값
+    ```hcl
+    variable "my_var" {
+      default = "value"
+    }
+    ```
+3. 환경 변수
+    ```bash
+    export TF_VAR_my_var="value"
+    ```
+4. `terraform.tfvars` 파일
+    ```tf
+    my_var = "value"
+    ```
+5. `*.auto.tfvars` 파일
+    - 파일명의 정렬에 따라 우선순위가 적용
+6. `*.auto.tfvars.json` 파일
+   - 파일명의 정렬에 따라 우선순위가 적용
+7. Terraform CLI 실행 시, `-var`, `-var-file` 옵션
+    ```bash
+    terraform apply -var=my_var=value
+    terraform apply -var-file=my_vars.tfvars
+    ```
+   
+# Local Block
+- 선언된 모듈 내에서만 접근 가능
+- `variable`과 달리 입력을 받을 수 없다.
+
+```hcl
+variable "prefix" {
+  default = "hello"
+}
+
+locals {
+  name = "terraform"
+  content = "${var.prefix} ${local.name}"
+  my_info = {
+    age = 20
+    region = "KR"
+  }
+  my_nums = [1, 2, 3, 4, 5]
+}
+
+locals {
+  content = "hello" # 중복 선언으로 오류 발생
+}
+```
+
+## local 참조
+- `local.<local_name>`
+- 여러 다른 파일에 선언하더라도, 다른 파일에서 서로 참조할 수 있다.
+
+# Output Block
+- 출력 값은 주로 Terraform Code의 Provisioning 결과를 확인하는 용도로 사용한다.
+- `terraform apply` 실행 후, 출력된 값을 확인할 수 있다.
+
+```hcl
+output "instance_ip_addr" {
+  value = "https://${aws_instance.web.public_ip}"
+}
+```
+
+## Output 메타인수 목록
+- `value`: 출력 값
+- `description`: 출력 값에 대한 설명
+- `sensitive`: 민감한 출력 값임을 알리고, 출력되지 않도록 설정
+- `depends_on`: 출력 값이 의존하는 리소스
+- `precondition`: 출력 값에 대한 조건 검증
+
+## 예시
+```hcl
+variable "my_password" {
+  sensitive = true
+}
+
+resource "local_file" "abc" {
+  content  = var.my_password
+  filename = "${path.module}/abc.txt"
+}
+
+output "file_id" {
+  value = local_file.abc.id
+}
+
+output "file_absolute_path" {
+  value = abspath(local_file.abc.filename)
+}
+```
+
+```bash
+$ terraform plan
+
+Changes to Outputs:
+  + file_absolute_path = "/Users/shinyoungkim/IdeaProjects/hello-terraform/abc.txt"
+  + file_id            = (known after apply)
+```
+
+```bash
+$ terraform apply
+
+Outputs:
+
+file_absolute_path = "/Users/shinyoungkim/IdeaProjects/hello-terraform/abc.txt"
+file_id = "40bd001563085fc35165329ea1ff5c5ecbdbbeef"
+```
+
+```bash
+$ terrafrom output file_id
+"40bd001563085fc35165329ea1ff5c5ecbdbbeef"
+
+$ terraform output -raw file_id
+40bd001563085fc35165329ea1ff5c5ecbdbbeef% 
+```
+
